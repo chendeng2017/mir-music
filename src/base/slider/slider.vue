@@ -43,12 +43,12 @@
           this._play()
         }
       }, 20)
-      window.addEventListener('resize', () => {
+      window.addEventListener('resize', () => { //监听窗口的大小变化
         if (!this.slider) {
           return
         }
-        this._setSliderWidth(true)
-        this.slider.refresh()
+        this._setSliderWidth(true)  //重新设置宽度
+        this.slider.refresh() //重新刷新dom
       })
     },
     methods: {
@@ -56,15 +56,16 @@
         this.children = this.$refs.sliderGroup.children
 
         let width = 0
-        let sliderWidth = this.$refs.slider.clientWidth
+        let sliderWidth = this.$refs.slider.clientWidth //监听屏幕的宽度
         for (let i = 0; i < this.children.length; i++) {
           let child = this.children[i]
           addClass(child, 'slider-item')//dom添加class
           child.style.width = sliderWidth + 'px' //child=父容器宽度
           width += sliderWidth //总宽度累加
         }
-        if (this.loop && !isResize) {//this.loop 克隆两个 （前后） 所以this.loop加上两个sliderwidth
-          width += 2 * sliderWidth
+        if (this.loop && !isResize) {  //this.loop && !isResize添加节点  传参数判断 是否需要增加2*宽度
+
+          width += 2 * sliderWidth  //this.loop 克隆两个 （前后） 所以this.loop加上两个sliderwidth
         }
         this.$refs.sliderGroup.style.width = width + 'px'
 
@@ -103,10 +104,14 @@
           pageIndex += 1
         }
         this.timer = setTimeout(() => {
-          this.slider.goToPage(pageIndex, 0, 400)
+          this.slider.goToPage(pageIndex, 0, 400)  //调用betterscroll 的gotopage方法实现自动轮播
         }, this.interval)
       }
 
+
+    },
+    destroyed(){
+        clearTimeout(this.timer)  //vue 实例组件销毁后所有的定时器也得销毁 有利于内存的释放
 
     }
 

@@ -20,5 +20,10 @@ export function param(data) {
     let value = data[k] !== undefined ? data[k] : ''
     url += `&${k}=${encodeURIComponent(value)}`
   }
-  return url ? url.substring(1) : ''
+  return url ? url.substring(1) : ''   //要是前面有？ 就去掉之后拼接
 }
+
+
+
+
+let  url = `${this.a1}${this.a2}`

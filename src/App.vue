@@ -3,7 +3,10 @@
     <m-header></m-header>
     <tab></tab>
     <transition name="router-fade" mode="out-in">
-     <router-view></router-view>
+      <keep-alive>
+        <router-view></router-view>
+      </keep-alive>
+
     </transition>
   </div>
 </template>
@@ -19,9 +22,10 @@
   }
 </script>
 
-<style scoped lang="stylus" rel="stylesheet/stylus"  type="text/stylus">
+<style scoped lang="stylus" rel="stylesheet/stylus" type="text/stylus">
   .router-fade-enter-active, .router-fade-leave-active
     transition: opacity .3s
+
   .router-fade-enter, .router-fade-leave-active
     opacity: 0;
 
