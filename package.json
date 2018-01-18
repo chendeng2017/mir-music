@@ -1,5 +1,5 @@
 {
-  "name": "ddmusic",
+  "name": "mir-music",
   "version": "1.0.0",
   "description": "音乐播放器",
   "author": "chendeng <chendeng@2014outlook.com>",
@@ -47,6 +47,7 @@
     "stylus-loader": "^2.5.1",
     "uglifyjs-webpack-plugin": "^1.1.1",
     "url-loader": "^0.5.8",
+    "vue-lazyload": "^1.1.4",
     "vue-loader": "^13.3.0",
     "vue-style-loader": "^3.0.1",
     "vue-template-compiler": "^2.5.2",

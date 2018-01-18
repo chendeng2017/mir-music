@@ -8,6 +8,11 @@ const Recommend = (resolve) => {
     resolve(module)
   })
 }
+const Singer = (resolve) => {
+  import('components/singer/singer').then((module) => {
+    resolve(module)
+  })
+}
 
 
 
@@ -21,6 +26,10 @@ export default new Router({
     {
       path: '/recommend',
       component: Recommend
+    },
+    {
+      path: '/singer',
+      component: Singer
     },
   ]
 })
