@@ -21,3 +21,15 @@ export function hasClass(el, className) {
   //                   calss（\表示转移） 前面是空白字符    空白自负结束
   return reg.test(el.calssName)
 }
+
+//获取index 是个基础的dom操作  提取出来
+export function getData(el, name, val) {
+  // 有val 就set  没有就get
+  const prefix = 'data-'  // 获取data-···的数据
+   name = prefix + name
+  if (val) {
+    return el.setAttribute(name, val)
+  } else {
+    return el.getAttribute(name)
+  }
+}

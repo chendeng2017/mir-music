@@ -1,7 +1,14 @@
 <template>
-  <scroll class="listview" :data="data">
+  <scroll class="listview"
+          @scroll="scroll"
+          :data="data"
+          :probe-type="probeType"
+          ref="listview"
+          :listenScroll="listenScroll"
+
+  >
     <ul>
-      <li v-for="group in data" class="list-group">
+      <li v-for="group in data" class="list-group" ref="listGroup">
         <h2 class="list-group-title">{{group.title}}</h2>
         <ul>
           <li v-for="item in group.items" class="list-group-item">
@@ -11,9 +18,15 @@
         </ul>
       </li>
     </ul>
-    <div class="list-shortcut">
+    <div class="list-shortcut"
+         @touchmove.stop.prevent="onShortcutTouchMove"
+         @touchstart="onShortcutTouchStart">
       <ul>
-        <li class="item" v-for="item in shortcutList">{{item}}</li>
+        <li class="item"
+            v-for="(item,index) in shortcutList"
+            :class="{'current':currentIndex===index}"
+            :data-index="index"
+        >{{item}}</li>
       </ul>
     </div>
   </scroll>
@@ -22,7 +35,17 @@
 
 <script type="text/ecmascript-6">
   import Scroll from 'base/scroll/scroll'
+  import {getData} from 'common/js/dom'
+  const TITLE_HEIGHT = 30
+  const ANCHOR_HEIGHT = 18  //18代表style里面的每个元素的高度
+
   export default{
+    data(){
+      return {
+        scrollY: -1,
+        currentIndex: 0   //当前应该显示的index
+      }
+    },
     props: {
       data: {
         type: Array,
@@ -37,6 +60,106 @@
       }
     },
     created(){
+      this.probeType = 3   //betterscroll监听实时滚动需要传数字3
+      this.listHeight = [] //给高度赋值
+      this.touch = {}  //定义touch获取start 和 move之后的值
+      this.listenScroll = true
+    },
+    methods: {
+      onShortcutTouchStart(e){  //(betterscrollyou touch方法)右侧的导航 点击 能让左侧滚动  需要用index去判断
+//        1.data-index 变量控制 listcourt里面的index
+//        2.用getdata方法获取这个带有data-index的属性的元素 并获取index
+//        3.用betterceoll自带的方法让左侧的index和右侧的index联动  让dom滚动到listgroup对应的元素上
+
+        let anchorIndex = getData(e.target, 'index')//        拿到data-index 的index
+        let firsTouch = e.touches[0] //获取你按下第一个手指的位置 共享两个函数里面这个位置
+        this.touch.y1 = firsTouch.pageY  //将pageY存到touch里面 到时候共享这个值
+//        console.log(this.touch.y1);
+        this.touch.anchorIndex = anchorIndex  //记录开始点击的index
+//        this.$refs.listview.scrollToElement(this.$refs.listGroup[anchorIndex], 0)
+        this._scrollTo(anchorIndex)
+      },
+      onShortcutTouchMove(e){
+        //滑动时候能让右侧联动 stop.prevent组织冒泡
+//        1.需要start -- move 滚动的位置  计算位置差 确定滚动到第几个元素
+//        2.需要start 获取Y  move之后获取Y  然后将Y 计算出来是多少个index
+//        与touchstart 共享Y
+        let firstTouch = e.touches[0]
+        this.touch.y2 = firstTouch.pageY
+//        console.log(this.touch.y2);
+        //计算Y轴上的偏移
+        let delta = (this.touch.y2 - this.touch.y1) / ANCHOR_HEIGHT | 0    // | 0 表示向下取整
+        let anchorIndex = parseInt(this.touch.anchorIndex) + delta  //记录移动之后的index   字符串和数字相加会变成新的字符串， 需要先转换成整型数字
+//        console.log(anchorIndex);
+        this._scrollTo(anchorIndex)
+//        this.currentIndex=anchorIndex
+      },
+      scroll(pos){
+        this.scrollY = pos.y  //观测better滚动的y的位置 scroll传过来的值
+      },
+      _calculateHeight(){ //计算滚动的高度
+        this.listHeight = []
+        const list = this.$refs.listGroup   //拿到listGroup到list的高度
+        let height = 0
+        this.listHeight.push(height)
+        for (let i = 0; i < list.length; i++) {
+          let item = list[i];
+          height += item.clientHeight
+          this.listHeight.push(height)
+
+        }
+
+      },
+      _scrollTo(index){
+        //封装这个滚动的方法
+        if (!index && index !== 0) {
+          return
+        }
+        if (index < 0) {
+          index = 0
+        } else if (index > this.listHeight.length - 2) {
+          index = this.listHeight.length - 2
+        }
+//        上面代码用来判断滑动时候的index值
+
+
+        this.$refs.listview.scrollToElement(this.$refs.listGroup[index], 0)  //0表示滚动动画的时间
+        this.scrollY = -this.listHeight[index]
+      }
+
+    },
+    watch: {  //watch里面监控是个函数
+      data() {
+        setTimeout(() => {
+          this._calculateHeight()
+        }, 20)
+      },
+      scrollY(newY){   //watch里面监控scrolly的变化然后给currentindex去赋值
+
+        const listHeight = this.listHeight
+        // 当滚动到顶部，newY>0
+        if (newY > 0) {
+          this.currentIndex = 0
+          return
+        }
+
+        // 在中间部分滚动
+        for (let i = 0; i < listHeight.length-1; i++) {
+          let height1 = listHeight[i];
+          let height2 = listHeight[i + 1];
+          if (-newY >= height1 && -newY < height2) {
+            this.currentIndex = i
+//            console.log(this.currentIndex);
+            return
+
+          }
+          // 当滚动到底部，且-newY大于最后一个元素的上限
+          this.currentIndex = listHeight.length - 2
+
+        }
+
+      }
+
     },
     components: {
       Scroll
