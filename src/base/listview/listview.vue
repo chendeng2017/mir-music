@@ -29,6 +29,9 @@
         >{{item}}</li>
       </ul>
     </div>
+    <div class="list-fixed" v-show="fixedTitle" ref="fixed">
+      <h1 class="fixed-title">{{fixedTitle}}</h1>
+    </div>
   </scroll>
 
 </template>
@@ -40,23 +43,31 @@
   const ANCHOR_HEIGHT = 18  //18代表style里面的每个元素的高度
 
   export default{
-    data(){
-      return {
-        scrollY: -1,
-        currentIndex: 0   //当前应该显示的index
-      }
-    },
     props: {
       data: {
         type: Array,
         default: []
       }
     },
+    data(){
+      return {
+        scrollY: -1,
+        currentIndex: 0, //当前应该显示的index
+        diff: -1  //用来解决fixed的动画问题     原理： 用listGroup的上限减去 scrollY的差 来控制fixed translate3D的偏移量
+      }
+    },
+
     computed: {
       shortcutList(){
         return this.data.map((group) => {
           return group.title.substring(0, 1)
         })
+      },
+      fixedTitle(){ // 计算fixed的title值
+        if(this.scrollY>0){ // 判断在顶部的时候是否需要数据标题
+            return ''
+        }
+          return this.data[this.currentIndex]?this.data[this.currentIndex].title:''
       }
     },
     created(){
@@ -135,7 +146,7 @@
         }, 20)
       },
       scrollY(newY){   //watch里面监控scrolly的变化然后给currentindex去赋值
-
+//        console.log(newY);
         const listHeight = this.listHeight
         // 当滚动到顶部，newY>0
         if (newY > 0) {
@@ -149,6 +160,7 @@
           let height2 = listHeight[i + 1];
           if (-newY >= height1 && -newY < height2) {
             this.currentIndex = i
+            this.diff = height2 + newY
 //            console.log(this.currentIndex);
             return
 
@@ -158,9 +170,24 @@
 
         }
 
-      }
+      },
+      diff(newVal) {  //得到diff 的值 检测高度的变化  去添加过度效果
+        let fixedTop = (newVal > 0 && newVal < TITLE_HEIGHT) ? newVal - TITLE_HEIGHT : 0
 
+        console.log(newVal+"-----12");
+
+
+        //如果滚动的newval在顶部  并且
+
+        if (this.fixedTop === fixedTop) {
+          return
+        }
+        this.fixedTop = fixedTop
+        this.$refs.fixed.style.transform = `translate3d(0,${fixedTop}px,0)`
+      }
     },
+
+
     components: {
       Scroll
     }
