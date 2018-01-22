@@ -1,6 +1,7 @@
 <template>
   <div class="singer">
-    <list-view :data="singer"></list-view>
+    <list-view :data="singer" @select="selectSinger"></list-view>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -9,7 +10,7 @@
   import {getSingerList} from 'api/singer'
   import {ERR_OK} from 'api/config'
   import Singer from 'common/js/singer'
-
+  import { mapMutations } from 'vuex'
   const HOT_SINGER_LEN = 10
   const HOT_NAME = "热门"
 
@@ -25,6 +26,14 @@
       this._getSingerList()
     },
     methods: {
+      selectSinger(singer){
+        this.$router.push({
+          path: `/singer/${singer.id}`
+        })
+//        console.log(singer);
+        this.setSinger(singer)
+      },
+
       _getSingerList(){
         getSingerList().then((res) => {
           if (res.code === ERR_OK) {
@@ -88,8 +97,12 @@
 //          若 a.title.charCodeAt(0) 小于 b.title.charCodeAt(0)在排序后的数组中 a 应该出现在 b 之前，则返回一个小于 0 的值。所以就会按照abcde 这个顺下排列下去
         })
         return hot.concat(ret)
-      }
+      },
+      ...mapMutations({
+        setSinger: 'SET_SINGER'
+      })
     },
+
     components: {
       ListView
     }

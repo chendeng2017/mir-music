@@ -11,7 +11,7 @@
       <li v-for="group in data" class="list-group" ref="listGroup">
         <h2 class="list-group-title">{{group.title}}</h2>
         <ul>
-          <li v-for="item in group.items" class="list-group-item">
+          <li @click="selectItem(item)" v-for="item in group.items" class="list-group-item">
             <img class="avatar" v-lazy="item.avatar" alt="">
             <span class="name">{{item.name}}</span>
           </li>
@@ -26,7 +26,8 @@
             v-for="(item,index) in shortcutList"
             :class="{'current':currentIndex===index}"
             :data-index="index"
-        >{{item}}</li>
+        >{{item}}
+        </li>
       </ul>
     </div>
     <div class="list-fixed" v-show="fixedTitle" ref="fixed">
@@ -64,10 +65,10 @@
         })
       },
       fixedTitle(){ // 计算fixed的title值
-        if(this.scrollY>0){ // 判断在顶部的时候是否需要数据标题
-            return ''
+        if (this.scrollY > 0) { // 判断在顶部的时候是否需要数据标题
+          return ''
         }
-          return this.data[this.currentIndex]?this.data[this.currentIndex].title:''
+        return this.data[this.currentIndex] ? this.data[this.currentIndex].title : ''
       }
     },
     created(){
@@ -77,6 +78,9 @@
       this.listenScroll = true
     },
     methods: {
+      selectItem(item){
+        this.$emit('select', item)
+      },
       onShortcutTouchStart(e){  //(betterscrollyou touch方法)右侧的导航 点击 能让左侧滚动  需要用index去判断
 //        1.data-index 变量控制 listcourt里面的index
 //        2.用getdata方法获取这个带有data-index的属性的元素 并获取index
@@ -155,15 +159,13 @@
         }
 
         // 在中间部分滚动
-        for (let i = 0; i < listHeight.length-1; i++) {
+        for (let i = 0; i < listHeight.length - 1; i++) {
           let height1 = listHeight[i];
           let height2 = listHeight[i + 1];
           if (-newY >= height1 && -newY < height2) {
             this.currentIndex = i
             this.diff = height2 + newY
-//            console.log(this.currentIndex);
             return
-
           }
           // 当滚动到底部，且-newY大于最后一个元素的上限
           this.currentIndex = listHeight.length - 2
@@ -174,15 +176,13 @@
       diff(newVal) {  //得到diff 的值 检测高度的变化  去添加过度效果
         let fixedTop = (newVal > 0 && newVal < TITLE_HEIGHT) ? newVal - TITLE_HEIGHT : 0
 
-        console.log(newVal+"-----12");
-
-
         //如果滚动的newval在顶部  并且
 
         if (this.fixedTop === fixedTop) {
           return
         }
         this.fixedTop = fixedTop
+
         this.$refs.fixed.style.transform = `translate3d(0,${fixedTop}px,0)`
       }
     },
