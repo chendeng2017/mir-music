@@ -32,6 +32,7 @@
         })
 //        console.log(singer);
         this.setSinger(singer)
+
       },
 
       _getSingerList(){
