@@ -28,6 +28,7 @@
     "better-scroll": "^0.1.15",
     "chalk": "^2.0.1",
     "copy-webpack-plugin": "^4.0.1",
+    "create-keyframe-animation": "^0.1.0",
     "css-loader": "^0.28.0",
     "extract-text-webpack-plugin": "^3.0.0",
     "file-loader": "^1.1.4",
