@@ -19,7 +19,7 @@
             :listen-scroll="listenScroll" :probe-type="probeType" class="list"
             ref="list">
       <div class="song-list-wrapper">
-        <song-list :songs="songs"></song-list>
+        <song-list @select="selectItem" :songs="songs"></song-list>
       </div>
       <div v-show="!songs.length" class="loading-container">
         <loading></loading>
@@ -33,9 +33,14 @@
   import SongList from 'base/song-list/song-list'
   import {prefixStyle} from 'common/js/dom'
   import Loading from 'base/loading/loading'
-  const RESERVED_HEIGHT = 40
+  import {mapActions} from 'vuex'
+
+
+
+
   const transform = prefixStyle('transform')
   const backdrop = prefixStyle('backdrop-filter')  //浏览器能力检测
+  const RESERVED_HEIGHT = 40
   export default{
     data(){
       return {
@@ -78,8 +83,19 @@
       },
       scroll(pos){
         this.scrollY = pos.y
-        console.log(pos.y);
-      }
+//        console.log(pos.y);
+      },
+      selectItem(item, index){
+          //song -list 传过来的值 需要存到vuex中 控制播放器的展示隐藏
+        this.selectPlay({
+          list:this.songs,
+          index
+        })
+
+      },
+      ...mapActions([
+          'selectPlay'
+      ])
     },
     watch: {
       scrollY(newY){

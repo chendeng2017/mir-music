@@ -1,8 +1,15 @@
-/**
- * Created by bsj01 on 2018/1/22.
- */
+import {playMode} from 'common/js/config'
 const state = {
   //要传递的数据
-  singer: {}
+  singer: {},
+  playing: false,
+  fullScreen: false,
+  playlist: [],
+  sequenceList: [],
+  mode: playMode.sequence,
+  currentIndex:-1,
+
+
+
 }
 export default state
