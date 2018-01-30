@@ -19,7 +19,7 @@
         </div>
         <div class="middle">
           <div class="middle-l">
-            <div class="cd-wrapper" ref="cd-wrapper">
+            <div class="cd-wrapper" ref="cdwrapper">
               <div class="cd">
                 <img class="image" :src="currentSong.image" alt="">
               </div>
@@ -78,7 +78,6 @@
     methods: {
       back(){
         this.setFullScreen(false)
-
       },
       open(){
         this.setFullScreen(true)
@@ -110,22 +109,21 @@
           }
         })
 
-        animations.runAnimation(this.$refs.cdWrapper, 'move', done)
+        animations.runAnimation(this.$refs.cdwrapper, 'move', done)
       },
       afterEnter(){
         animations.unregisterAnimation('move')
-        this.$refs.cdWrapper.style.animation = ''
+        this.$refs.cdwrapper.style.animation = ''
       },
       leave(el, done) {
-        this.$refs.cdWrapper.style.animation = 'all .4s'
+        this.$refs.cdwrapper.style.transition = 'all 0.4s'
         const {x, y, scale} = this._getPosAndScale()
-        this.$refs.cdWrapper.style[transform] = `translate3d(${x}px,${y}px,0) scale(${scale})`
-        this.$refs.cdWrapper.addEventListener('transitionend', done)//监听完成动画之后的事件
-
+        this.$refs.cdwrapper.style['transform'] = `translate3d(${x}px,${y}px,0) scale(${scale})`
+        this.$refs.cdwrapper.addEventListener('transitionend', done)//监听完成动画之后的事件
       },
       afterLeave() {
-        this.$refs.cdWrapper.style.transition = ''
-        this.$refs.cdWrapper.style[transform] = ''
+        this.$refs.cdwrapper.style.transition = ''
+        this.$refs.cdwrapper.style['transform'] = ''
 
       },
       _getPosAndScale(){
