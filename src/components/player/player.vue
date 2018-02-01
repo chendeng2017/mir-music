@@ -20,7 +20,7 @@
         <div class="middle">
           <div class="middle-l">
             <div class="cd-wrapper" ref="cdwrapper">
-              <div class="cd">
+              <div class="cd" :class="cdCls">
                 <img class="image" :src="currentSong.image" alt="">
               </div>
             </div>
@@ -36,7 +36,7 @@
               <i class="icon-prev"></i>
             </div>
             <div class="icon i-center">
-              <i class="icon-play"></i>
+              <i @click="togglePlaying" :class="palyIcon"></i>
             </div>
             <div class="icon i-right">
               <i class="icon-next"></i>
@@ -52,18 +52,21 @@
     <transition name="mini">
       <div class="mini-player" v-show="!fullScreen" @click="open">
         <div class="icon">
-          <img :src="currentSong.image" width="40" height="40" alt="">
+          <img :class="cdCls" :src="currentSong.image" width="40" height="40" alt="">
         </div>
         <div class="text">
           <h2 class="name" v-html="currentSong.name"></h2>
           <p class="desc" v-html="currentSong.singer"></p>
         </div>
         <div class="control">
+          <i @click.stop="togglePlaying" :class="miniIcon"></i>
+        </div>
+        <div class="control">
           <i class="icon-playlist"></i>
         </div>
       </div>
     </transition>
-
+    <audio ref="audio" :src="currentSong.url"></audio>
   </div>
 </template>
 
@@ -82,8 +85,13 @@
       open(){
         this.setFullScreen(true)
       },
-      ...mapMutations({
-        setFullScreen: 'SET_FULL_SCREEN'
+      togglePlaying(){ //根据vuex设置播放状态
+        this.setPlayingState(!this.playing)
+
+      },
+      ...mapMutations({   //mutation的映射
+        setFullScreen: 'SET_FULL_SCREEN',
+        setPlayingState: 'SET_PLAYING_STATE'
       }),
       enter(el, done) {
         const {x, y, scale} = this._getPosAndScale()
@@ -144,13 +152,39 @@
 
     },
     computed: {
-      ...mapGetters([
+      //根据播放状态确定图片旋转样式
+      cdCls(){
+        return this.playing ? 'play' : 'play pause'
+
+      },
+      palyIcon(){
+        return this.playing ? 'icon-pause' : 'icon-play'
+      },
+      miniIcon(){
+        return this.playing ? 'icon-pause-mini' : 'icon-play-mini'
+      },
+      ...mapGetters([  //vuex取得所需要的状态
         'fullScreen',
         'playlist',
-        'currentSong'
+        'currentSong',
+        'playing'
       ]),
 
 
+    },
+    watch: {
+      currentSong(){   //更具url的变化 来确定播放状态
+        this.$nextTick(() => {    //需要再dom加载完成之后 来获取dom
+          this.$refs.audio.play()
+        })
+      },
+      playing(newPlaying){
+        const audio = this.$refs.audio
+        this.$nextTick(() => {   //需要再dom加载完成之后 来获取dom
+          newPlaying ? audio.play() : audio.pause()
+        })
+
+      }
     }
   }
 </script>
