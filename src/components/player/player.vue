@@ -28,18 +28,26 @@
 
         </div>
         <div class="bottom">
+          <div class="progress-wrapper">
+            <span class="time time-l">{{format(currentTime)}}</span>
+            <span class="progress-bar-wrapper">
+              <ProgressBar @percentChange="onProgressBarChange" :precent="precent"></ProgressBar>
+            </span>
+            <span class="time time-r">{{format(currentSong.duration)}}</span>
+          </div>
+
           <div class="operators">
             <div class="icon i-left">
               <i class="icon-sequence"></i>
             </div>
-            <div class="icon i-left">
-              <i class="icon-prev"></i>
+            <div class="icon i-left" :class="disableCls">
+              <i class="icon-prev" @click="prev"></i>
             </div>
-            <div class="icon i-center">
+            <div class="icon i-center" :class="disableCls">
               <i @click="togglePlaying" :class="palyIcon"></i>
             </div>
-            <div class="icon i-right">
-              <i class="icon-next"></i>
+            <div class="icon i-right" :class="disableCls">
+              <i class="icon-next" @click="next"></i>
             </div>
             <div class="icon i-right">
               <i class="icon icon-not-favorite"></i>
@@ -66,7 +74,7 @@
         </div>
       </div>
     </transition>
-    <audio ref="audio" :src="currentSong.url"></audio>
+    <audio ref="audio" :src="currentSong.url" @canplay="ready" @error="error" @timeupdate="updateTime"></audio>
   </div>
 </template>
 
@@ -74,7 +82,15 @@
   import {mapGetters, mapMutations} from 'vuex'
   import animations from 'create-keyframe-animation'
   import {prefixStyle} from 'common/js/dom'
+  import ProgressBar from 'base/progress-bar/progress-bar'
+  const transform = prefixStyle('transform')
   export default{
+    data(){
+      return {
+        songReady: false,   //添加标识位  判断audio标签是否ready 来决定是否切换下一首歌
+        currentTime: 0     //audio 中timeupdate 会在播放时派发这个事件
+      }
+    },
     created(){
       this._getPosAndScale()
     },
@@ -89,9 +105,72 @@
         this.setPlayingState(!this.playing)
 
       },
+      prev(){
+        if (!this.songReady) {
+          return
+        }
+        let index = this.currentIndex - 1
+        if (index === -1) {
+          index = this.playlist.length - 1
+        }
+        this.setCurrentIndex(index)
+        if (!this.playing) {
+          this.togglePlaying()
+        }
+        this.songReady = false
+      },
+      next(){
+        if (!this.songReady) {
+          return
+        }
+        let index = this.currentIndex + 1
+        if (index === this.playlist.length) {
+          index = 0
+        }
+        this.setCurrentIndex(index)
+        if (!this.playing) {
+          this.togglePlaying()
+        }
+        this.songReady = false
+
+      },
+      ready(){
+        this.songReady = true
+      },
+      error(){
+        //当网络错误 或者加载失败 歌曲不存在 会加载这个函数  让他能点击找到下一个
+        this.songReady = true
+      },
+      updateTime(e){
+        this.currentTime = e.target.currentTime   //audio有currenttime这个属性 ：设置或返回音频/视频中的当前播放位置（以秒计）。
+      },
+      format(interval){  //将获取的时间戳 做个计算
+        interval = interval | 0  //向下取整
+        const minute = interval / 60 | 0
+        const seconed = this._pad(interval % 60)
+        return `${minute}:${seconed}`
+      },
+      _pad(num, n = 2){   //用来判断当秒只有一位数的时候前面加个0
+        let len = num.toString().length
+        if (len < n) {
+          num = '0' + num
+          len++
+        }
+        return num
+
+      },
+      onProgressBarChange(precent){  //从progress传过来的值来调整播放的时间
+        this.$refs.audio.currentTime = this.currentSong.duration * precent
+        if (!this.playing) {  //当时暂停状态的时候 拖动之后调用播放
+          this.togglePlaying()
+
+        }
+      },
+
       ...mapMutations({   //mutation的映射
         setFullScreen: 'SET_FULL_SCREEN',
-        setPlayingState: 'SET_PLAYING_STATE'
+        setPlayingState: 'SET_PLAYING_STATE',
+        setCurrentIndex: 'SET_CURRENT_INDEX'    //currentindex切换歌曲原理是 getter里面写了方法  用curretnindex决定currnetsong
       }),
       enter(el, done) {
         const {x, y, scale} = this._getPosAndScale()
@@ -126,12 +205,12 @@
       leave(el, done) {
         this.$refs.cdwrapper.style.transition = 'all 0.4s'
         const {x, y, scale} = this._getPosAndScale()
-        this.$refs.cdwrapper.style['transform'] = `translate3d(${x}px,${y}px,0) scale(${scale})`
+        this.$refs.cdwrapper.style[transform] = `translate3d(${x}px,${y}px,0) scale(${scale})`
         this.$refs.cdwrapper.addEventListener('transitionend', done)//监听完成动画之后的事件
       },
       afterLeave() {
         this.$refs.cdwrapper.style.transition = ''
-        this.$refs.cdwrapper.style['transform'] = ''
+        this.$refs.cdwrapper.style[transform] = ''
 
       },
       _getPosAndScale(){
@@ -163,11 +242,18 @@
       miniIcon(){
         return this.playing ? 'icon-pause-mini' : 'icon-play-mini'
       },
+      disableCls(){
+        return this.songReady ? '' : 'disable'
+      },
+      precent(){  //歌曲播放的比例
+        return this.currentTime / this.currentSong.duration
+      },
       ...mapGetters([  //vuex取得所需要的状态
         'fullScreen',
         'playlist',
         'currentSong',
-        'playing'
+        'playing',
+        'currentIndex'
       ]),
 
 
@@ -185,6 +271,9 @@
         })
 
       }
+    },
+    components: {
+      ProgressBar
     }
   }
 </script>
