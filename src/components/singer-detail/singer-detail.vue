@@ -84,3 +84,7 @@
   .slide-enter, .slide-leave-to
     transform: translate3d(100%, 0, 0)
 </style>
+'http://ws.stream.qqmusic.qq.com/102636799.m4a?fromtag=00‘
+http://tsmusic24.tc.qq.com/102636799.mp3
+http://cc.stream.qqmusic.qq.com/C200102636799.m4a?fromtag=0
+http://cc.stream.qqmusic.qq.com/C200{0}.m4a?vkey={1}&fromtag=0
