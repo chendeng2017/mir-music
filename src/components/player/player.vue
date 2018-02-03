@@ -38,7 +38,7 @@
 
           <div class="operators">
             <div class="icon i-left">
-              <i class="icon-sequence"></i>
+              <i :class="iconMode" @click="changeMode"></i>
             </div>
             <div class="icon i-left" :class="disableCls">
               <i class="icon-prev" @click="prev"></i>
@@ -67,7 +67,10 @@
           <p class="desc" v-html="currentSong.singer"></p>
         </div>
         <div class="control">
-          <i @click.stop="togglePlaying" :class="miniIcon"></i>
+          <progress-circle :radius="32" :precent="precent">
+            <i @click.stop="togglePlaying" :class="miniIcon" class="icon-mini"></i>
+          </progress-circle>
+
         </div>
         <div class="control">
           <i class="icon-playlist"></i>
@@ -83,6 +86,9 @@
   import animations from 'create-keyframe-animation'
   import {prefixStyle} from 'common/js/dom'
   import ProgressBar from 'base/progress-bar/progress-bar'
+  import ProgressCircle from 'base/progress-circle/progress-circle'
+  import {playMode} from 'common/js/config'
+  import {shuffle} from 'common/js/util'
   const transform = prefixStyle('transform')
   export default{
     data(){
@@ -100,6 +106,25 @@
       },
       open(){
         this.setFullScreen(true)
+      },
+      changeMode(){ //改变播放模式
+        const mode = (this.mode + 1) % 3
+        this.setPlayMode(mode)
+        let list = null
+        if (mode === playMode.random) {
+          list = shuffle(this.sequenceList)  //如果播放模式是随机的则让有序列表洗牌打乱
+        } else {
+          list = this.sequenceList
+        }
+        this.resetCurrentIndex(list) //当playlist改变时候currentindex来保证currentid不改变
+        this.setPlayList(list) //将播放列表设置为当前打乱的列表
+      },
+      resetCurrentIndex(list){   //切换播放模式的时候当前的currentsong的id是不能变化的 需要重新设置index
+        let index = list.findIndex((item) => { //es6语法
+          return item.id === this.currentSong.id //在列表里面找到当前歌曲的索引
+        })
+        this.setCurrentIndex(index)
+
       },
       togglePlaying(){ //根据vuex设置播放状态
         this.setPlayingState(!this.playing)
@@ -170,7 +195,9 @@
       ...mapMutations({   //mutation的映射
         setFullScreen: 'SET_FULL_SCREEN',
         setPlayingState: 'SET_PLAYING_STATE',
-        setCurrentIndex: 'SET_CURRENT_INDEX'    //currentindex切换歌曲原理是 getter里面写了方法  用curretnindex决定currnetsong
+        setCurrentIndex: 'SET_CURRENT_INDEX',  //currentindex切换歌曲原理是 getter里面写了方法  用curretnindex决定currnetsong
+        setPlayMode: 'SET_PLAY_MODE',
+        setPlayList: 'SET_PLAYLIST'
       }),
       enter(el, done) {
         const {x, y, scale} = this._getPosAndScale()
@@ -242,6 +269,9 @@
       miniIcon(){
         return this.playing ? 'icon-pause-mini' : 'icon-play-mini'
       },
+      iconMode(){
+        return this.mode === playMode.sequence ? 'icon-sequence' : this.mode === playMode.loop ? 'icon-loop' : 'icon-random'
+      },
       disableCls(){
         return this.songReady ? '' : 'disable'
       },
@@ -253,13 +283,18 @@
         'playlist',
         'currentSong',
         'playing',
-        'currentIndex'
+        'currentIndex',
+        'mode',
+        'sequenceList'
       ]),
 
 
     },
     watch: {
-      currentSong(){   //更具url的变化 来确定播放状态
+      currentSong(newSong, oldSong){   //更具url的变化 来确定播放状态
+        if (newSong.id === oldSong.id) {   //若果id不变 就直接返回
+          return
+        }
         this.$nextTick(() => {    //需要再dom加载完成之后 来获取dom
           this.$refs.audio.play()
         })
@@ -273,7 +308,8 @@
       }
     },
     components: {
-      ProgressBar
+      ProgressBar,
+      ProgressCircle
     }
   }
 </script>

@@ -55,7 +55,6 @@
         const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth
         const percent = this.$refs.progress.clientWidth / barWidth  //运动的距离
         this.$emit('percentChange', percent)
-
       },
       progressClick(e){
         this._offset(e.offsetX)  //设置点击的位置
