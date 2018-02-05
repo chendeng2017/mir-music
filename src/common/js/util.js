@@ -3,12 +3,13 @@ function getRandomInt(min, max) {
 
 }
 export function shuffle(arr) {
-  for (let i = 0; i < arr.length; i++) {
+  let _arr =arr.slice()
+  for (let i = 0; i < _arr.length; i++) {
     let j = getRandomInt(0, i)
     let t = arr[i]
-    arr[i] = arr[j]
-    arr[j] = t
+    _arr[i] = arr[j]
+    _arr[j] = t
   }
-  return arr
+  return _arr
 
 }

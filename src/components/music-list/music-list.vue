@@ -6,7 +6,7 @@
     <h1 class="title" v-html="title"></h1>
     <div class="bg-image" :style="bgStyle" ref="bgImage">
       <div class="play-wrapper">
-        <div ref="playBtn" v-show="songs.length>0" class="play">
+        <div ref="playBtn" v-show="songs.length>0" class="play" @click="random">
           <i class="icon-play"></i>
           <span class="text">随机播放全部</span>
         </div>
@@ -34,8 +34,6 @@
   import {prefixStyle} from 'common/js/dom'
   import Loading from 'base/loading/loading'
   import {mapActions} from 'vuex'
-
-
 
 
   const transform = prefixStyle('transform')
@@ -86,15 +84,22 @@
 //        console.log(pos.y);
       },
       selectItem(item, index){
-          //song -list 传过来的值 需要存到vuex中 控制播放器的展示隐藏
+        //song -list 传过来的值 需要存到vuex中 控制播放器的展示隐藏
         this.selectPlay({
-          list:this.songs,
+          list: this.songs,
           index
         })
 
       },
+      random(){
+          this.randomPlay({
+            list:this.songs
+          })
+
+      },
       ...mapActions([
-          'selectPlay'
+        'selectPlay',
+        'randomPlay'
       ])
     },
     watch: {

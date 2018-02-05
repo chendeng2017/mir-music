@@ -160,14 +160,14 @@
         this.songReady = false
 
       },
-      end(){
+      end(){  //audio标签的默认事件，当播放完之后执行
         if (this.mode === playMode.loop) {
           this.loop()
         } else {
           this.next()
         }
       },
-      loop(){
+      loop(){  //单曲循环
         this.$refs.audio.currentTime = 0
         this.$refs.audio.play()
 

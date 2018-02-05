@@ -57,7 +57,10 @@
         this.$emit('percentChange', percent)
       },
       progressClick(e){
-        this._offset(e.offsetX)  //设置点击的位置
+        const rect = this.$refs.progressBar.getBoundingClientRect()
+        const offsetWidth = e.pageX - rect.left
+        this._offset(offsetWidth)
+        //this._offset(e.offsetX)  //设置点击的位置
         this._triggerPercent()
       }
 
