@@ -13,7 +13,9 @@
     "vue": "^2.5.2",
     "jsonp": "^0.2.1",
     "vue-router": "^3.0.1",
-    "axios": "^0.16.1"
+    "axios": "^0.16.1",
+    "js-base64": "^2.1.9",
+    "lyric-parser": "^1.0.1"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",

@@ -17,17 +17,35 @@
           <h1 class="title" v-html="currentSong.name"></h1>
           <h2 class="subtitle" v-html="currentSong.singer"></h2>
         </div>
-        <div class="middle">
+        <div class="middle"
+             @touchstart.prevent="middleTouchStart"
+             @touchmove.prevent="middleTouchMove"
+             @touchend="middleTouchEnd"
+        >
           <div class="middle-l">
             <div class="cd-wrapper" ref="cdwrapper">
               <div class="cd" :class="cdCls">
                 <img class="image" :src="currentSong.image" alt="">
               </div>
             </div>
-          </div>
 
+          </div>
+          <scroll class="middle-r" ref="lyricList" :data="currentLyric && currentLyric.lines">
+            <div class="lyric-wrapper">
+              <div v-if="currentLyric">
+                <p ref="lyricLine"
+                   class="text"
+                   :class="{'current': currentLineNum ===index}"
+                   v-for="(line,index) in currentLyric.lines">{{line.txt}}</p>
+              </div>
+            </div>
+          </scroll>
         </div>
         <div class="bottom">
+          <div class="dot-wrapper">
+            <span class="dot" :class="{'active':currentShow==='cd'}"></span>
+            <span class="dot" :class="{'active':currentShow==='lyric'}"></span>
+          </div>
           <div class="progress-wrapper">
             <span class="time time-l">{{format(currentTime)}}</span>
             <span class="progress-bar-wrapper">
@@ -90,12 +108,18 @@
   import ProgressCircle from 'base/progress-circle/progress-circle'
   import {playMode} from 'common/js/config'
   import {shuffle} from 'common/js/util'
+  import Lyric from 'lyric-parser'
   const transform = prefixStyle('transform')
+  import Scroll from 'base/scroll/scroll'
   export default{
     data(){
       return {
         songReady: false,   //添加标识位  判断audio标签是否ready 来决定是否切换下一首歌
-        currentTime: 0     //audio 中timeupdate 会在播放时派发这个事件
+        currentTime: 0,
+        //audio 中timeupdate 会在播放时派发这个事件
+        currentLyric: null,
+        currentLineNum: 0,
+        currentShow: 'cd'
       }
     },
     created(){
@@ -188,6 +212,7 @@
         const seconed = this._pad(interval % 60)
         return `${minute}:${seconed}`
       },
+
       _pad(num, n = 2){   //用来判断当秒只有一位数的时候前面加个0
         let len = num.toString().length
         if (len < n) {
@@ -197,6 +222,27 @@
         return num
 
       },
+      getLyric(){
+
+        this.currentSong.getLyric().then((lyric) => {
+          this.currentLyric = new Lyric(lyric, this.handleLyric)
+          if (this.playing) {
+            this.currentLyric.play() //Lyric属性有个play方法
+          }
+          console.log(this.currentLyric);
+        })
+
+
+      },
+      handleLyric({lineNum, txt}){
+        this.currentLineNum = lineNum
+        if (lineNum > 5) {  //控制歌词在中间显示
+          let lineEl = this.$refs.lyricLine[lineNum - 5]
+          this.$refs.lyricList.scrollToElement(lineEl, 1000)//BScroll的方法
+        } else {
+          this.$refs.lyricList.scrollTo(0, 0, 1000)
+        }
+      },
       onProgressBarChange(precent){  //从progress传过来的值来调整播放的时间
         this.$refs.audio.currentTime = this.currentSong.duration * precent
         if (!this.playing) {  //当时暂停状态的时候 拖动之后调用播放
@@ -204,7 +250,28 @@
 
         }
       },
+      middleTouchStart(e) {
+        this.touch.initated = true
+        const touch = e.touches[0]
+        this.touch.startX = touch.pageX
+        this.touch.startY = touch.pageY
+      },
+      middleTouchMove(e) {
+        if (!this.touch.initated) {
+          return
+        }
+        const touch = e.touches[0]
+        const deltaX = touch.pageX - this.touch.startX
+        const deltaY = touch.pageY - this.touch.startY
+        if (Math.abs(deltaY) > Math.abs(deltaX)) {
+          return
+        }
+        const left = this.currentShow === 'cd' ? 0 : -window.innerWidth
 
+      },
+      middleTouchEnd() {
+
+      },
       ...mapMutations({   //mutation的映射
         setFullScreen: 'SET_FULL_SCREEN',
         setPlayingState: 'SET_PLAYING_STATE',
@@ -310,6 +377,7 @@
         }
         this.$nextTick(() => {    //需要再dom加载完成之后 来获取dom
           this.$refs.audio.play()
+          this.getLyric()
         })
       },
       playing(newPlaying){
@@ -322,7 +390,8 @@
     },
     components: {
       ProgressBar,
-      ProgressCircle
+      ProgressCircle,
+      Scroll
     }
   }
 </script>

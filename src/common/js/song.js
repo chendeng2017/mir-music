@@ -1,3 +1,8 @@
+import {getLyric} from 'api/song'
+import {ERR_OK} from 'api/config'
+import {Base64} from 'js-base64'
+
+
 export default class Song {
   //创建个song类 构造一个对象
   constructor({id, mid, singer, name, album, duration, image, url}) {
@@ -9,6 +14,26 @@ export default class Song {
     this.duration = duration
     this.image = image
     this.url = url
+  }
+
+  //创建个获取歌词的方法
+  getLyric() {
+    if (this.lyric) {  //当页面存在this，lyric时候 就不再请求 直接返回一个成功的promise对象
+      return Promise.resolve(this.lyrics)
+    }
+    return new Promise((resolve, reject) => {
+      getLyric(this.mid).then((res) => {
+        if (res.retcode === ERR_OK) {
+          this.lyric = Base64.decode(res.lyric)
+          resolve(this.lyric)
+        } else {
+          reject('no lyric')
+        }
+
+      })
+    })
+
+
   }
 }
 export function createSong(musicData) {
@@ -38,6 +63,4 @@ function filterSinger(singer) {   //siner在musicData里面以数组形式存放
   })
   return ret.join('/')
 }
-'http://dl.stream.qqmusic.qq.com/C400001Qu4I30eVFYb.m4a?vkey=5A29B20CD8201F59820CDA950E2DD1F5AC29C1DE264313719EA7FA9CC7CFC7E4CA5B18F0588DAB91C60A1B7828A5F1DD99FE520DBA6E8B2C&guid=375695145&uin=0&fromtag=66'
-'http://dl.stream.qqmusic.qq.com/C400001TXSYu1Gwuwv.m4a?vkey=150CA6E6AD58CB7BF2648699D51AE8279AB899344C46304937B34E70B0A00E52CE403C62A42487FF8EC36926AC26106B94A5674AD55BC0B5&guid=375695145&uin=0&fromtag=66'
-'http://isure.stream.qqmusic.qq.com/C100004cNNNW0QG6RR.m4a?fromtag=32'
+

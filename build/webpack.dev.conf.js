@@ -20,8 +20,6 @@ const apiRoutes = express.Router()
 app.use('/api', apiRoutes)
 
 
-
-
 app.use('/api', apiRoutes)
 
 
@@ -46,6 +44,29 @@ const devWebpackConfig = merge(baseWebpackConfig, {
         }).then((response) => {
           console.log(response.data);
           res.json(response.data)
+        }).catch((e) => {
+          console.log(e)
+        })
+      })
+      app.get('/api/lyric', function (req, res) {
+        const url = 'https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg'
+        axios.get(url, {
+          headers: {
+            referer: 'https://c.y.qq.com/',
+            host: 'c.y.qq.com'
+          },
+          params: req.query
+        }).then((response) => {
+          var ret = response.data
+          if (typeof ret === 'string') {
+            var reg = /^\w+\(({[^()]+})\)$/  //用正则去匹配返回的callback
+            //后台返回的是jsonp的需要再请求时做处理
+            var matches = ret.match(reg)  //可在字符串内检索指定的值，或找到一个或多个正则表达式的匹配。
+            if (matches) {
+              ret = JSON.parse(matches[1])
+            }
+          }
+          res.json(ret)
         }).catch((e) => {
           console.log(e)
         })
