@@ -78,6 +78,9 @@
       this.listenScroll = true
     },
     methods: {
+      refresh() {
+        this.$refs.listview.refresh() //将组件scroll的refrsh方法暴露到外侧组件
+      },
       selectItem(item){
         this.$emit('select', item)
       },

@@ -34,12 +34,15 @@
   import {prefixStyle} from 'common/js/dom'
   import Loading from 'base/loading/loading'
   import {mapActions} from 'vuex'
-
+  import {playListMixin} from 'common/js/mixin'
 
   const transform = prefixStyle('transform')
   const backdrop = prefixStyle('backdrop-filter')  //浏览器能力检测
   const RESERVED_HEIGHT = 40
+
   export default{
+//      组件中插入mixin
+    mixins: [playListMixin],
     data(){
       return {
         scrollY: 0
@@ -76,6 +79,11 @@
 
     },
     methods: {
+      handlePlaylist(playlist){
+        const bottom = playlist.length > 0 ? '60px' : ''
+        this.$refs.list.$el.style.bottom = bottom
+        this.$refs.list.refresh()
+      },
       back() {
         this.$router.back()
       },
@@ -92,9 +100,9 @@
 
       },
       random(){
-          this.randomPlay({
-            list:this.songs
-          })
+        this.randomPlay({
+          list: this.songs
+        })
 
       },
       ...mapActions([

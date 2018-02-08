@@ -1,12 +1,13 @@
 <template>
-  <div class="recommend" >
+  <div class="recommend" ref="recommend">
     <scroll ref="scroll" class="recommend-content" :data="discList">
       <div>
         <div v-if="recommends.length" class="slider-wrapper">
           <slider>
             <div v-for="item in recommends">
               <a :href="item.linkUrl">
-                <img  @load="loadImage" class="needsclick" :src="item.picUrl">   <!--better-scroll和fastclick 的click冲突 使用内置needsclick这个class属性就可以可解决冲突问题-->
+                <img @load="loadImage" class="needsclick" :src="item.picUrl">
+                <!--better-scroll和fastclick 的click冲突 使用内置needsclick这个class属性就可以可解决冲突问题-->
               </a>
             </div>
           </slider>
@@ -40,7 +41,9 @@
   import loading from 'base/loading/loading'
   import {getRecommend, getDiscList} from 'api/recommend'
   import {ERR_OK} from 'api/config'
+  import {playlistMixin} from 'common/js/mixin'
   export default{
+    //mixins: [playlistMixin],
     data() {
       return {
         recommends: [],
@@ -53,13 +56,18 @@
 //      }, 2000)测试scroll 在dom异步加载的时候是否将滚动页面计算正确
       this._getRecommend()
 
-      setTimeout(()=>{
+      setTimeout(() => {
         this._getDiscList()
-      },2000)
+      }, 2000)
 
 
     },
     methods: {
+      handlePlaylist(playlist) {
+        const bottom = playlist.length > 0 ? '60px' : ''
+        this.$refs.recommend.style.bottom = bottom
+        this.$refs.scroll.refresh()
+      },
       _getRecommend() {
         getRecommend().then((res) => {
           if (res.code === ERR_OK) {
