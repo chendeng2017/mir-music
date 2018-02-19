@@ -49,7 +49,7 @@
             this.singer = this._normalizeSinger(res.data.list)
 //            this._normalizeSinger(this.singer);
 //            console.log(this._normalizeSinger(this.singer));
-            console.log(this.singer);
+//            console.log(this.singer);
           }
         })
       },

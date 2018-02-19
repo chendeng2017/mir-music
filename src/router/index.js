@@ -1,5 +1,5 @@
-import Vue from 'vue'
-import Router from 'vue-router'
+import Vue from "vue";
+import Router from "vue-router";
 
 Vue.use(Router)
 
@@ -19,6 +19,23 @@ const SingerDetail = (resolve) => {
   })
 }
 
+const Rank = (reslove) => {
+  import('components/rank/rank').then((module) => {
+    reslove(module)
+  })
+}
+
+const Disc = (resolve) => {
+  import('components/disc/disc').then((module) => {
+    resolve(module)
+  })
+}
+
+const TopList = (resolve) => {
+  import('components/top-list/top-list').then((module) => {
+    resolve(module)
+  })
+}
 
 export default new Router({
   linkActiveClass: 'active',
@@ -29,7 +46,13 @@ export default new Router({
     },
     {
       path: '/recommend',
-      component: Recommend
+      component: Recommend,
+      children: [
+        {
+          path: ':id',
+          component: Disc
+        }
+      ]
     },
     {
       path: '/singer',
@@ -38,6 +61,16 @@ export default new Router({
         {
           path: ':id',
           component: SingerDetail
+        }
+      ]
+    },
+    {
+      path: '/rank',
+      component: Rank,
+      children: [
+        {
+          path: ':id',
+          component: TopList
         }
       ]
     },

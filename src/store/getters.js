@@ -14,4 +14,7 @@ export const currentSong = (state) => {
   //根据播放列表的索引去计算当前播放的歌曲
   return state.playlist[state.currentIndex] || {}
 }
+export const disc = state => state.disc
+
+export const topList = state => state.topList
 

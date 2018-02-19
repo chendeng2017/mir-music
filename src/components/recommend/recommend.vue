@@ -15,7 +15,7 @@
         <div class="recommend-list">
           <h1 class="list-title">热门歌单推荐</h1>
           <ul>
-            <li v-for="item in discList" class="item">
+            <li @click="selectItem(item)" v-for="item in discList" class="item">
               <div class="icon">
                 <img width="60" height="60" v-lazy="item.imgurl" alt="">
               </div>
@@ -31,6 +31,7 @@
         <loading></loading>
       </div>
     </scroll>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -42,6 +43,7 @@
   import {getRecommend, getDiscList} from 'api/recommend'
   import {ERR_OK} from 'api/config'
   import {playlistMixin} from 'common/js/mixin'
+  import {mapMutations} from 'vuex'
   export default{
     //mixins: [playlistMixin],
     data() {
@@ -55,10 +57,10 @@
 //        this._getRecommend()
 //      }, 2000)测试scroll 在dom异步加载的时候是否将滚动页面计算正确
       this._getRecommend()
-
-      setTimeout(() => {
-        this._getDiscList()
-      }, 2000)
+      this._getDiscList()
+//      setTimeout(() => {
+//        this._getDiscList()
+//      }, 2000)
 
 
     },
@@ -92,7 +94,17 @@
           this.checkloaded = true   //设置标识位置 让这个逻辑只执行一次
         }
       },
+      selectItem(item) {
+        this.$router.push({
+          path: `/recommend/${item.dissid}`
+        })
+        this.setDisc(item)
+      },
+      ...mapMutations({
+        setDisc: 'SET_DISC'
+      })
     },
+
     components: {
       Slider,
       Scroll,
